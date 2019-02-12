@@ -12,10 +12,7 @@ import HttpProxy
 import selenium
 import threading
 
-proxies = [{'https': 'https://115.155.122.148:8118',
-            'https':'https://119.101.115.93:9999',
-            'https':'https://119.101.114.119:9999',
-            'https':'https://119.101.117.215:9999'}]
+
 httpPorxies = HttpProxy.getHTTP()
 headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:64.0) Gecko/20100101 Firefox/64.0',
@@ -44,7 +41,7 @@ def requestUrl(url):
     while True:
         try:
             h = httpPorxies[random.randint(0,len(httpPorxies) - 1)]
-            print('当前使用代理为',h)
+            print('当前使用代理为',h,'访问地址为',url)
             requests.packages.urllib3.disable_warnings()
             requestManager = requests.get(url, headers=headers,proxies=h, verify=False)
             requestManager.encoding = None
@@ -302,9 +299,61 @@ def getVideoUrl(url):
     driver.quit()
     return 'unknow'
 
+#6V电影
+def get6v():
+    soup=requestUrl('https://www.66s.cc')
+    items=soup.select('.menu-item ')
+    dataArr = []
+    for item in items:
+        if len(item.select('a')):
+            href=item.select('a')[0]['href']
+            if '66s' in href:
+                index=1
+                while 1:
+                    url=href
+                    if index != 1:
+                        url=href+'index_'+str(index)
+                    print(url)
+                    soup=requestUrl(url)
+                    zooms = soup.select('.zoom')
+                    if len(zooms):
+                        for z in zooms:
+                            data = {}
+                            data['href'] = z['href']
+                            data['name']=z['title']
+                            if len(z.select('img')):
+                                img = z.select('img')[0]
+                                data['img_src'] = img['src']
+                            data['video_data'] = get6vDetail(z['href'])
+                            print(data)
+                            dataArr.append(data)
+                            with open('/Users/zh/Desktop/VideoJson/' + '6v' + '.json', 'w') as file_obj:
+                                json.dump(dataArr, file_obj)
+                                print("写入json文件：")
+                        index+=1
+                    else:break
+
+def get6vDetail(url):
+    soup=requestUrl(url)
+    lBtn=soup.select('.lBtn')
+    video_url_arr=[]
+    for l in lBtn:
+        soup=requestUrl(l['href'])
+        iframe=soup.select('iframe')
+        if len(iframe):
+            video_url=iframe[0]['src']
+            video_url_arr.append({
+                'video_url':video_url,
+                'title':l['title']
+            })
+    return video_url_arr
+
+
+
 if __name__ == '__main__':
     threads = []
     threads.append(threading.Thread(target=meijutt))
     threads.append(threading.Thread(target=getMoive))
+    threads.append(threading.Thread(target=get6v()))
     for t in threads:
         t.start()
