@@ -303,7 +303,8 @@ def getVideoUrl(url):
 def get6v():
     soup=requestUrl('https://www.66s.cc')
     items=soup.select('.menu-item ')
-    dataArr = []
+    dataArr={}
+    key=1
     for item in items:
         if len(item.select('a')):
             href=item.select('a')[0]['href']
@@ -320,17 +321,19 @@ def get6v():
                         for z in zooms:
                             data = {}
                             data['href'] = z['href']
-                            data['name']=z['title']
+                            data['video_name']=z['title']
                             if len(z.select('img')):
                                 img = z.select('img')[0]
-                                data['img_src'] = img['src']
+                                data['video_img'] = img['src']
                             data['video_data'] = get6vDetail(z['href'])
                             print(data)
-                            dataArr.append(data)
+                            dataArr[str(key)]=data
                             with open('/Users/zh/Desktop/VideoJson/' + '6v' + '.json', 'w') as file_obj:
                                 json.dump(dataArr, file_obj)
                                 print("写入json文件：")
+                                key+=1
                         index+=1
+
                     else:break
 
 def get6vDetail(url):
@@ -351,9 +354,10 @@ def get6vDetail(url):
 
 
 if __name__ == '__main__':
-    threads = []
-    threads.append(threading.Thread(target=meijutt))
-    threads.append(threading.Thread(target=getMoive))
-    threads.append(threading.Thread(target=get6v()))
-    for t in threads:
-        t.start()
+    # threads = []
+    # threads.append(threading.Thread(target=meijutt))
+    # threads.append(threading.Thread(target=getMoive))
+    # threads.append(threading.Thread(target=get6v()))
+    # for t in threads:
+    #     t.start()
+    get6v()
