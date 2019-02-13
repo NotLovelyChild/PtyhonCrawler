@@ -230,6 +230,7 @@ def getMoive():
             continue
 
         data = {}
+        data['video_id']=i
         url = 'https://www.ahu.cc/vod/'+ str(i) + '/'
         soup = requestUrl(url)
         vod_l = soup.select('.vod_l')
@@ -334,12 +335,16 @@ def get6v():
                 print(address)
                 for z in zooms:
                     data = {}
+                    data['video_id']=key
                     data['href'] = z['href']
                     data['video_name']=z['title']
                     if len(z.select('img')):
                         img = z.select('img')[0]
                         data['video_img'] = img['src']
-                    data['video_data'] = get6vDetail(z['href'])
+                    detail=get6vDetail(z['href'])
+                    data['video_data'] = detail['video_data']
+                    data['baidu_data'] = detail['baidu_data']
+                    data['video_info'] = detail['video_info']
                     print(data)
                     dataArr[str(key)] = data
                     with open('/Users/zh/Desktop/VideoJson/' + '6v' + '.json', 'w') as file_obj:
@@ -348,11 +353,27 @@ def get6v():
                         key+=1
             else:break
 
-
 def get6vDetail(url):
     if 'www.66s.cc' not in url:
         url = 'https://www.66s.cc' + url
     soup=requestUrl(url)
+    tbody=soup.select('tbody')
+    baidu_data=[]
+    if len(tbody):
+        for body in tbody:
+            for a in body.select('a'):
+                baidu_title=a.text
+                baudi_url=a['href']
+                baidu_data.append({
+                    'baidu_title':baidu_title,
+                    'baudi_url':baudi_url
+                })
+
+    content=soup.select('#post_content')
+    video_info=[]
+    if len(content):
+        video_info=content[0].text.split('\n')
+
     lBtn=soup.select('.lBtn')
     video_url_arr=[]
     for l in lBtn:
@@ -379,7 +400,11 @@ def get6vDetail(url):
                         'video_url': video_url,
                         'title': title
                     })
-    return video_url_arr
+    return {
+        'video_data':video_url_arr,
+        'baidu_data':baidu_data,
+        'video_info':video_info
+    }
 
 
 
