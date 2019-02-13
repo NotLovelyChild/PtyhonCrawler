@@ -12,7 +12,7 @@ def requestUrl(url):
 
 def loadHTTP():
     ips = []
-    for i in range(1,6):
+    for i in range(1,10):
         url = 'https://www.xicidaili.com/wt/'+str(i)
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')
@@ -37,7 +37,7 @@ def loadHTTP():
 
 def loadHTTPS():
     ips = []
-    for i in range(1,6):
+    for i in range(1,10):
         url = 'https://www.xicidaili.com/wn/'+str(i)
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')

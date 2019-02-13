@@ -50,6 +50,15 @@ def requestUrl(url):
             print('Connection Error try retry')
             continue
 
+def requestUrlWithChrome(url):
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    driver.quit()
+    return soup
+
 #美剧天堂
 meijutt_main_url='https://www.meijutt.com'
 def meijutt():
@@ -232,7 +241,7 @@ def getMoive():
             if len(title_w):
                 name = title_w[0].text
                 print(name)
-                data['name'] = name
+                data['video_name'] = name
             # 图片地址
             pic = vod.select('.pic')
             if len(pic):
@@ -240,7 +249,7 @@ def getMoive():
                 if len(img):
                     img_src = img[0]['data-original']
                     print(img_src)
-                    data['img_src'] = img_src
+                    data['video_img'] = img_src
 
             # 信息
             w_space = vod.select('.w.space')
@@ -271,7 +280,7 @@ def getMoive():
                         'video_url':video_url
                     })
                     data['video_data'] = video_data
-                    data['info'] = info_arr
+                    data['video_info'] = info_arr
                     print(title,href,video_url)
                     jsonData[str(i)] = data
                     with open('/Users/zh/Desktop/VideoJson/' + 'movie' + '.json', 'w') as file_obj:
@@ -305,43 +314,52 @@ def get6v():
     items=soup.select('.menu-item ')
     dataArr={}
     key=1
+    urls=[]
     for item in items:
         if len(item.select('a')):
             href=item.select('a')[0]['href']
             if '66s' in href:
-                index=1
-                while 1:
-                    url=href
-                    if index != 1:
-                        url=href+'index_'+str(index)
-                    print(url)
-                    soup=requestUrl(url)
-                    zooms = soup.select('.zoom')
-                    if len(zooms):
-                        for z in zooms:
-                            data = {}
-                            data['href'] = z['href']
-                            data['video_name']=z['title']
-                            if len(z.select('img')):
-                                img = z.select('img')[0]
-                                data['video_img'] = img['src']
-                            data['video_data'] = get6vDetail(z['href'])
-                            print(data)
-                            dataArr[str(key)]=data
-                            with open('/Users/zh/Desktop/VideoJson/' + '6v' + '.json', 'w') as file_obj:
-                                json.dump(dataArr, file_obj)
-                                print("写入json文件：")
-                                key+=1
-                        index+=1
+                urls.append(href)
 
-                    else:break
+    for url in urls:
+        index = 1
+        while 1:
+            address = url
+            if index != 1:
+                address=url+'index_'+str(index)+'.html'
+            index+=1
+            soup = requestUrl(address)
+            zooms = soup.select('.zoom')
+            if len(zooms):
+                print(address)
+                for z in zooms:
+                    data = {}
+                    data['href'] = z['href']
+                    data['video_name']=z['title']
+                    if len(z.select('img')):
+                        img = z.select('img')[0]
+                        data['video_img'] = img['src']
+                    data['video_data'] = get6vDetail(z['href'])
+                    print(data)
+                    dataArr[str(key)] = data
+                    with open('/Users/zh/Desktop/VideoJson/' + '6v' + '.json', 'w') as file_obj:
+                        json.dump(dataArr, file_obj)
+                        print("写入json文件：")
+                        key+=1
+            else:break
+
 
 def get6vDetail(url):
+    if 'www.66s.cc' not in url:
+        url = 'https://www.66s.cc' + url
     soup=requestUrl(url)
     lBtn=soup.select('.lBtn')
     video_url_arr=[]
     for l in lBtn:
-        soup=requestUrl(l['href'])
+        href = l['href']
+        if 'www.66s.cc' not in href:
+            href = 'https://www.66s.cc' + href
+        soup=requestUrl(href)
         iframe=soup.select('iframe')
         if len(iframe):
             video_url=iframe[0]['src']
@@ -349,6 +367,18 @@ def get6vDetail(url):
                 'video_url':video_url,
                 'title':l['title']
             })
+        else:
+            soup=requestUrlWithChrome(href)
+            video = soup.select('#ckplayer_a1')
+            if len(video):
+                sources = video[0].select('source')
+                for source in sources:
+                    video_url = source['src']
+                    title = source['type']
+                    video_url_arr.append({
+                        'video_url': video_url,
+                        'title': title
+                    })
     return video_url_arr
 
 
