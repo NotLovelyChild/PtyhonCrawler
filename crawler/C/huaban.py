@@ -22,7 +22,7 @@ def loadMemberList(memberId,type):
         t='pins/'
     elif type == '3':
         t='likes/'
-    url = 'http://huaban.com/' + memberId +'/' + t
+    url = 'http://huabanpro.com/' + memberId +'/' + t
     print(url)
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
@@ -87,7 +87,7 @@ def loadGroupList(data):
     index = 1
     dataArr = []
     for d in data:
-        url = 'http://huaban.com/boards/' + d['id'] + '/'
+        url = 'http://huabanpro.com/boards/' + d['id'] + '/'
         print(url)
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')
@@ -135,7 +135,7 @@ def loadGroupList(data):
 
 def loadImgData(data):
     for d in data:
-        url = 'http://huaban.com/pins/' + str(d['id']) +'/'
+        url = 'http://huabanpro.com/pins/' + str(d['id']) +'/'
         print('Loading......', url)
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')

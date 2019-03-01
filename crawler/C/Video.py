@@ -344,7 +344,7 @@ def get6v():
                     detail=get6vDetail(z['href'])
                     data['video_data'] = detail['video_data']
                     data['baidu_data'] = detail['baidu_data']
-                    data['video_info'] = detail['video_info']
+                    # data['video_info'] = detail['video_info']
                     print(data)
                     dataArr[str(key)] = data
                     with open('/Users/zh/Desktop/VideoJson/' + '6v' + '.json', 'w') as file_obj:
@@ -402,8 +402,8 @@ def get6vDetail(url):
                     })
     return {
         'video_data':video_url_arr,
-        'baidu_data':baidu_data,
-        'video_info':video_info
+        'baidu_data':baidu_data
+        # 'video_info':video_info
     }
 
 
