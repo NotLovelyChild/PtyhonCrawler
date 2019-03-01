@@ -344,7 +344,9 @@ def main():
         try:
           file = '/Users/zh/Desktop/VCode/%s-cutting-%s.jpg' % (img_name.split('.')[0], i)
           # 识别验证码
-          str_img = str_img + image_to_string(Image.open(file),lang = 'eng', config='-psm 10') #单个字符是10，一行文本是7
+          vcode = pytesseract.image_to_string(Image.open(file))
+          print(vcode)
+          # str_img = str_img + image_to_string(Image.open(file),lang = 'eng', config='-psm 10') #单个字符是10，一行文本是7
         except Exception as err:
             print('error',err)
             pass
