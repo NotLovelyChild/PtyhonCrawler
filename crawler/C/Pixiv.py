@@ -6,7 +6,7 @@ import time
 import pathlib
 import urllib3
 import http
-
+import HttpProxy
 import os
 from urllib.request import urlretrieve
 
@@ -38,7 +38,7 @@ def requestUrl(url):
         try:
             print('访问地址为',url)
             requests.packages.urllib3.disable_warnings()
-            requestManager = requests.get(url, headers=headers, verify=False)
+            requestManager = requests.get(url, headers=headers, verify=False,httpPorxies = HttpProxy.getHTTP())
             requestManager.encoding = None
             return BeautifulSoup(requestManager.text, 'html.parser')
         except requests.exceptions.ConnectionError:
@@ -47,7 +47,7 @@ def requestUrl(url):
 
 def requestUrlWithChrome(url):
     chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -64,7 +64,7 @@ def download(data):
         return
 
     try:
-        imgresponse = requests.get(data['url'], stream=True)
+        imgresponse = requests.get(data['url'], stream=True, httpPorxies = HttpProxy.getHTTP())
         image = imgresponse.content
         try:
             with open(address, "wb") as jpg:

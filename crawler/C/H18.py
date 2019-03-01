@@ -35,7 +35,7 @@ headers = {
 def getHTTP():
     data = []
     try:
-        with open('/Users/jackmacbook/Desktop/http.json', 'r') as file_obj:
+        with open('/Users/zh/Desktop/http.json', 'r') as file_obj:
             data = json.load(file_obj)
     except IOError:
         print('IO error')
@@ -45,7 +45,7 @@ def getHTTP():
 def getHTTPS():
     data = []
     try:
-        with open('/Users/jackmacbook√/Desktop/https.json', 'r') as file_obj:
+        with open('/Users/zh/Desktop/https.json', 'r') as file_obj:
             data = json.load(file_obj)
     except IOError:
         print('IO error')
@@ -67,22 +67,32 @@ def requestUrl(url):
             continue
 
 def requestUrlWithChrome(url):
-    chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument('--headless')
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    driver.quit()
-    return soup
+    while True:
+        try:
+            print('Chrome 访问地址为', url)
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--headless')
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(url)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            driver.quit()
+            return soup
+        except selenium.common.exceptions.TimeoutException:
+            print('Connection Error try retry')
+            continue
 
 def download(data):
-    print('start download',data['name'])
+    fileName = data['name'] + '.' + data['url'].split('.')[-1]
+    print('To prepare download',fileName)
+    print('Check if the file exists')
 
-    address = "/Users/jackmacbook/Desktop/L" + "/" + data['name'] + data['style']
+    address = "/Users/zh/Pictures/R" + "/" + fileName
     path = pathlib.Path(address)
     if path.is_file():
-        print('当前文件已存在')
+        print('The current file already exists')
         return
+    else:
+        print('The current file does not exist\n Start download ',fileName)
 
     try:
         httpPorxies = getHTTP()
@@ -93,7 +103,7 @@ def download(data):
         try:
             with open(address, "wb") as jpg:
                 jpg.write(image)
-                print ('download ok',[data['name']])
+                print ('download ok',fileName)
         except IOError:
             print("IO Error\n")
             pass
@@ -122,22 +132,26 @@ def download(data):
 # xhamster
 # 图片
 def getXhamsterPictures():
-    # soup=requestUrl('https://xhamster.com/photos')
-    # picture_list=soup.select('.gallery-thumb__link.thumb-image-container')
-    # for picture in picture_list:
-    #     img=picture['href']
-    #     print(img)
-    soup=requestUrl('https://xhamster.com/photos/gallery/would-you-fuck-taryn-11494121')
-    picture_list=soup.select('.photo-container.photo-thumb')
-    for picture in picture_list:
-        img = picture['href']
-        soup=requestUrl(img)
-        img_div=soup.select('.fotorama__stage__frame.fotorama__loaded.fotorama__loaded--img.fotorama__active')
-        if len(img_div):
-            img_div=img_div[0].select('img')
-            if len(img_div):
-                img_url=img_div[0]['src']
-                print(img_url)
+    for i in range(1,46000):
+        soup=requestUrl('https://xhamster.com/photos/'+str(i))
+        picture_list=soup.select('.gallery-thumb__link.thumb-image-container')
+        for picture in picture_list:
+            img=picture['href']
+            soup=requestUrl(img)
+            picture_list=soup.select('.photo-container.photo-thumb')
+            for picture in picture_list:
+                img = picture['href']
+                soup=requestUrlWithChrome(img)
+                img_name=img.split('/')[-2]+'_'+img.split('/')[-1]
+                img_div=soup.select('.fotorama__stage__frame.fotorama__loaded.fotorama__loaded--img.fotorama__active')
+                if len(img_div):
+                    img_div=img_div[0].select('img')
+                    if len(img_div):
+                        img_url=img_div[0]['src']
+                        download({
+                            'name':img_name,
+                            'url':img_url
+                        })
 
 
 if __name__ == '__main__':
