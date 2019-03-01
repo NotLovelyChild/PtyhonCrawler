@@ -126,6 +126,8 @@ def download(data):
         pass
     except selenium.common.exceptions.TimeoutException:
         print('selenium.common.exceptions.TimeoutException')
+    except requests.exceptions.ConnectionError:
+        print('requests.exceptions.ConnectionError')
     finally:
         pass
 
