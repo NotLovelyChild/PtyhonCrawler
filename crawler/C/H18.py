@@ -78,15 +78,21 @@ def requestUrlWithChrome(url):
             driver.quit()
             return soup
         except selenium.common.exceptions.TimeoutException:
+            driver.quit()
             print('Connection Error try retry')
             continue
 
 def download(data):
-    fileName = data['name'] + '.' + data['url'].split('.')[-1]
-    print('To prepare download',fileName)
+    print(data['url'])
+    fileName=''
+    if data['type'] == 'img':
+        fileName = data['name'] + '.' + data['url'].split('.')[-1]
+    elif data['type'] == 'xhamsterVideo':
+        fileName=data['name']+'.mp4'
+    print('To prepare download\n',fileName)
     print('Check if the file exists')
 
-    address = "/Users/zh/Pictures/R" + "/" + fileName
+    address = "/Users/zh/Pictures/Videos" + "/" + fileName
     path = pathlib.Path(address)
     if path.is_file():
         print('The current file already exists')
@@ -135,11 +141,11 @@ def download(data):
 # 图片
 def getXhamsterPictures():
     for i in range(1,46000):
-        soup=requestUrl('https://xhamster.com/photos/'+str(i))
+        soup=requestUrlWithChrome('https://xhamster.com/photos/categories/teen/'+str(i))
         picture_list=soup.select('.gallery-thumb__link.thumb-image-container')
         for picture in picture_list:
             img=picture['href']
-            soup=requestUrl(img)
+            soup=requestUrlWithChrome(img)
             picture_list=soup.select('.photo-container.photo-thumb')
             for picture in picture_list:
                 img = picture['href']
@@ -152,20 +158,46 @@ def getXhamsterPictures():
                         img_url=img_div[0]['src']
                         download({
                             'name':img_name,
-                            'url':img_url
+                            'url':img_url,
+                            'type':'img'
                         })
+
+#视频
+def getXhamsterVideos():
+    data_arr=[]
+    for i in range(1,9):
+        url='https://xhamster.com/hd/best/'+str(i)
+        soup=requestUrl(url)
+        videos_list=soup.select('.thumb-list__item.video-thumb')
+        for video in videos_list:
+            name_info=video.select('.video-thumb-info__name')
+            video_info=video.select('.video-thumb__image-container.thumb-image-container')
+            if len(name_info) and len(video_info):
+                name=name_info[0].text
+                video_url=video_info[0]['href']
+                print(name,video_url)
+                data_arr.append({
+                    'video_name':name,
+                    'video_url':video_url
+                })
+
+    print('视频个数',len(data_arr))
+
+    for data in data_arr:
+        soup = requestUrlWithChrome(data['video_url'])
+        video_div = soup.select('.player-container__no-player.xplayer.xplayer-fallback-image.xh-helper-hidden')
+        if len(video_div):
+            href = video_div[0]['href']
+            video_url = href.replace(';', '&')
+            print(data['video_name'])
+            print(video_url)
+            download({
+                'name': data['video_name'],
+                'url': video_url,
+                'type': 'xhamsterVideo'
+            })
 
 
 if __name__ == '__main__':
-    # soup=requestUrlWithChrome('https://xhamster.com/videos/schoolgirl-besties-fucking-and-blowjob-in-facial-3way-11003138')
-    # video_div = soup.select('.player-container__no-player.xplayer.xplayer-fallback-image.xh-helper-hidden')
-    # if len(video_div):
-    #     href = video_div[0]['href']
-    #     video_url = href.replace(';','&')
-    #     print(video_url)
-    #     download({
-    #         'name':'123',
-    #         'style':'.mp4',
-    #         'url':video_url
-    #     })
-    getXhamsterPictures()
+    # getXhamsterPictures()
+    getXhamsterVideos()
