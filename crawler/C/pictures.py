@@ -6,6 +6,9 @@ import http
 import pathlib
 import random
 import socket
+import json
+from selenium import webdriver
+import selenium
 
 proxies = [{'https': 'https://122.4.44.66:22300',
             'https':'https://119.101.118.109:9999',
@@ -17,10 +20,110 @@ headers = {
     }
 pro = {'https': 'https://124.205.143.212:38768'}
 
+def getHTTP():
+    data = []
+    try:
+        with open('/Users/zh/Desktop/http.json', 'r') as file_obj:
+            data = json.load(file_obj)
+    except IOError:
+        print('IO error')
+
+    return data
+
+def getHTTPS():
+    data = []
+    try:
+        with open('/Users/zh/Desktop/https.json', 'r') as file_obj:
+            data = json.load(file_obj)
+    except IOError:
+        print('IO error')
+
+    return data
+
 def requestUrl(url):
-    requestManager = requests.get(url, headers=headers,proxies=proxies[random.randint(0,len(proxies) - 1)], verify=False)
-    requestManager.encoding = 'UTF-8'
-    return BeautifulSoup(requestManager.text, 'html.parser')
+    while True:
+        try:
+            httpPorxies=getHTTP()
+            h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
+            print('当前使用代理为', h, '访问地址为', url)
+            requests.packages.urllib3.disable_warnings()
+            requestManager = requests.get(url, headers=headers, verify=False, proxies=h)
+            requestManager.encoding = None
+            return BeautifulSoup(requestManager.text, 'html.parser')
+        except requests.exceptions.ConnectionError:
+            print('Connection Error try retry')
+            continue
+
+def requestUrlWithChrome(url):
+    while True:
+        try:
+            print('Chrome 访问地址为', url)
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--headless')
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(url)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            driver.quit()
+            return soup
+        except selenium.common.exceptions.TimeoutException:
+            driver.quit()
+            print('Connection Error try retry')
+            continue
+
+def download(data):
+    print(data['url'])
+    fileName=''
+    if data['type'] == 'img':
+        fileName = data['name'] + '.' + data['url'].split('.')[-1]
+    elif data['type'] == 'xhamsterVideo':
+        fileName=data['name']+'.mp4'
+    print('To prepare download\n',fileName)
+    print('Check if the file exists')
+
+    address = "/Users/zh/Pictures/Videos" + "/" + fileName
+    path = pathlib.Path(address)
+    if path.is_file():
+        print('The current file already exists')
+        return
+    else:
+        print('The current file does not exist\n Start download ',fileName)
+
+    try:
+        httpPorxies = getHTTP()
+        h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
+        print('当前使用代理为', h)
+        imgresponse = requests.get(data['url'], stream=True, proxies=h)
+        image = imgresponse.content
+        try:
+            with open(address, "wb") as jpg:
+                jpg.write(image)
+                print ('download ok',fileName)
+        except IOError:
+            print("IO Error\n")
+            pass
+        except UnboundLocalError:
+            print('UnboundLocalError')
+            pass
+        finally:
+            jpg.close
+    except requests.exceptions.ChunkedEncodingError:
+        print('requests.exceptions.ChunkedEncodingError')
+        pass
+    except requests.exceptions.ChunkedEncodingError:
+        print('ChunkedEncodingError -- please wait 3 seconds')
+        pass
+    except urllib3.exceptions.ProtocolError:
+        print('urllib3.exceptions.ProtocolError')
+        pass
+    except http.client.IncompleteRead:
+        print('http.client.IncompleteRead')
+        pass
+    except selenium.common.exceptions.TimeoutException:
+        print('selenium.common.exceptions.TimeoutException')
+    except requests.exceptions.ConnectionError:
+        print('requests.exceptions.ConnectionError')
+    finally:
+        pass
 
 
 def downloadImg(name,url):
@@ -283,7 +386,6 @@ def f_get_style_list():
 
         f_get_group_detail(main_url)
 
-
 #获取详细分类
 def f_get_group_detail(url):
     dataArr = []
@@ -375,19 +477,87 @@ def f_get_img_url_group(data):
     for d in dataArr:
         downloadImg(d['name'],d['href'])
 
+
+#ZOL桌面壁纸
+def zolGetList():
+    print('加载列表中。。。')
+    main_url='http://desk.zol.com.cn'
+    tag_lists=[]
+    soup=requestUrlWithChrome(main_url)
+    items=soup.select('.brand-sel-box.clearfix')
+    for item in items:
+        tags=item.select('a')
+        for tag in tags:
+            tag_href=tag['href']
+            tag_title=tag.text
+            tag_lists.append({
+                'tag_href':main_url+tag_href,
+                'tag_title':tag_title
+            })
+
+    i=0
+    for tag in tag_lists:
+        print(str(i),tag['tag_title'])
+        i+=1
+
+    print('选择要抓取的类型')
+    index=input()
+    print('正在加载',tag_lists[int(index)]['tag_title'])
+    zolGetWalle(tag_lists[int(index)]['tag_href'])
+
+def zolGetWalle(url):
+    main_url = 'http://desk.zol.com.cn'
+    soup=requestUrlWithChrome(url)
+    photos=soup.select('.photo-list-padding')
+    for photo in photos:
+        href=photo.select('a')
+        em = photo.select('a')
+        if len(href) and len(em):
+            href_url=main_url+href[0]['href']
+            title = em[0].text.split(' ')[0]
+            zolGetGroup(title,href_url)
+
+def zolGetGroup(name,url):
+    main_url = 'http://desk.zol.com.cn'
+    print(name,url)
+    soup=requestUrlWithChrome(url)
+    photo_list=soup.select('.photo-list-box')
+    i=1
+    if len(photo_list):
+        photos=photo_list[0].select('a')
+        for photo in photos:
+            href=main_url+photo['href']
+            title=name+str(i)
+            i+=1
+            soup=requestUrlWithChrome(href)
+            tagfbl=soup.select('.tagfbl')
+            print(tagfbl)
+            if len(tagfbl):
+                imgs=tagfbl[0].select('a')
+                if len(imgs):
+                    big_img_href=main_url+imgs[0]['href']
+                    print(title,big_img_href)
+
+
 if __name__ == '__main__':
-    while 1:
-        print('请选择要抓取的网站\n'
-              '1:美卓\n'
-              '2.5857壁纸站\n'
-              '-1.退出')
-        i = input()
-        if i == '1':
-            meizhuo('http://www.win4000.com/')
-        elif i == '2':
-            f_get_style_list()
-        elif i == '-1':
-            break
-        else:
-            print('输入有误，请重新输入。')
-            continue
+    zolGetWalle('http://desk.zol.com.cn/dongman/')
+
+
+    # while 1:
+    #     print('请选择要抓取的网站\n'
+    #           '1:美卓\n'
+    #           '2.5857壁纸站\n'
+    #           '3.ZOL桌面壁纸\n'
+    #           '-1.退出\n')
+    #     i = input()
+    #     if i == '1':
+    #         meizhuo('http://www.win4000.com/')
+    #     elif i == '2':
+    #         f_get_style_list()
+    #     elif i == '3':
+    #         zolGetList()
+    #     elif i == '-1':
+    #         break
+    #     else:
+    #         print('输入有误，请重新输入。')
+    #         continue
