@@ -80,7 +80,7 @@ def download(data):
     print('To prepare download\n',fileName)
     print('Check if the file exists')
 
-    address = "/Users/zh/Pictures/Videos" + "/" + fileName
+    address = "/Users/zh/Pictures/wallpaper" + "/" + fileName
     path = pathlib.Path(address)
     if path.is_file():
         print('The current file already exists')
@@ -89,7 +89,7 @@ def download(data):
         print('The current file does not exist\n Start download ',fileName)
 
     try:
-        httpPorxies = getHTTP()
+        httpPorxies = getHTTPS()
         h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
         print('当前使用代理为', h)
         imgresponse = requests.get(data['url'], stream=True, proxies=h)
@@ -529,35 +529,46 @@ def zolGetGroup(name,url):
             href=main_url+photo['href']
             title=name+str(i)
             i+=1
-            soup=requestUrlWithChrome(href)
-            tagfbl=soup.select('.tagfbl')
-            print(tagfbl)
-            if len(tagfbl):
-                imgs=tagfbl[0].select('a')
-                if len(imgs):
-                    big_img_href=main_url+imgs[0]['href']
-                    print(title,big_img_href)
+            while True:
+                try:
+                    chrome_options = webdriver.ChromeOptions()
+                    chrome_options.add_argument('--headless')
+                    driver = webdriver.Chrome(options=chrome_options)
+                    driver.get(href)
+                    driver.find_element_by_class_name('PicBigBtn').click()
+                    soup = BeautifulSoup(driver.page_source, 'html.parser')
+                    driver.quit()
+                    img_div=soup.select('#layerDeskPic')
+                    if len(img_div):
+                        img_url=img_div[0]['src']
+                        download({
+                            'name': title,
+                            'url': img_url,
+                            'type': 'img'
+                        })
+                    break
+                except selenium.common.exceptions.TimeoutException:
+                    driver.quit()
+                    print('Connection Error try retry')
+                    continue
 
 
 if __name__ == '__main__':
-    zolGetWalle('http://desk.zol.com.cn/dongman/')
-
-
-    # while 1:
-    #     print('请选择要抓取的网站\n'
-    #           '1:美卓\n'
-    #           '2.5857壁纸站\n'
-    #           '3.ZOL桌面壁纸\n'
-    #           '-1.退出\n')
-    #     i = input()
-    #     if i == '1':
-    #         meizhuo('http://www.win4000.com/')
-    #     elif i == '2':
-    #         f_get_style_list()
-    #     elif i == '3':
-    #         zolGetList()
-    #     elif i == '-1':
-    #         break
-    #     else:
-    #         print('输入有误，请重新输入。')
-    #         continue
+    while 1:
+        print('请选择要抓取的网站\n'
+              '1:美卓\n'
+              '2.5857壁纸站\n'
+              '3.ZOL桌面壁纸\n'
+              '-1.退出\n')
+        i = input()
+        if i == '1':
+            meizhuo('http://www.win4000.com/')
+        elif i == '2':
+            f_get_style_list()
+        elif i == '3':
+            zolGetList()
+        elif i == '-1':
+            break
+        else:
+            print('输入有误，请重新输入。')
+            continue
