@@ -507,15 +507,21 @@ def zolGetList():
 
 def zolGetWalle(url):
     main_url = 'http://desk.zol.com.cn'
-    soup=requestUrlWithChrome(url)
-    photos=soup.select('.photo-list-padding')
-    for photo in photos:
-        href=photo.select('a')
-        em = photo.select('a')
-        if len(href) and len(em):
-            href_url=main_url+href[0]['href']
-            title = em[0].text.split(' ')[0]
-            zolGetGroup(title,href_url)
+    i=1
+    while True:
+        soup=requestUrlWithChrome(url+str(i)+'.html')
+        photos=soup.select('.photo-list-padding')
+        for photo in photos:
+            href=photo.select('a')
+            em = photo.select('a')
+            if len(href) and len(em):
+                href_url=main_url+href[0]['href']
+                title = em[0].text.split(' ')[0]
+                zolGetGroup(title,href_url)
+                print(title,href_url)
+        i+=1
+        if len(soup.select('#pageNext')) == 0:
+            return
 
 def zolGetGroup(name,url):
     main_url = 'http://desk.zol.com.cn'
@@ -546,12 +552,20 @@ def zolGetGroup(name,url):
                             'url': img_url,
                             'type': 'img'
                         })
-                    break
+                    return
                 except selenium.common.exceptions.TimeoutException:
                     driver.quit()
                     print('Connection Error try retry')
                     continue
+                except selenium.common.exceptions.NoSuchElementException:
+                    driver.quit()
+                    print('Cselenium.common.exceptions.NoSuchElementException')
+                    continue
 
+
+#pixiv
+def pixiv_get():
+    print()
 
 if __name__ == '__main__':
     while 1:

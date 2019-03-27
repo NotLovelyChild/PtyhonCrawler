@@ -92,7 +92,7 @@ def download(data):
     print('To prepare download\n',fileName)
     print('Check if the file exists')
 
-    address = "/Users/zh/Pictures/Videos" + "/" + fileName
+    address = "/Users/zh/Pictures/R" + "/" + fileName
     path = pathlib.Path(address)
     if path.is_file():
         print('The current file already exists')
@@ -101,7 +101,7 @@ def download(data):
         print('The current file does not exist\n Start download ',fileName)
 
     try:
-        httpPorxies = getHTTP()
+        httpPorxies = getHTTPS()
         h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
         print('当前使用代理为', h)
         imgresponse = requests.get(data['url'], stream=True, proxies=h)
@@ -197,7 +197,52 @@ def getXhamsterVideos():
                 'type': 'xhamsterVideo'
             })
 
+#G站
+# def getGImg():
+
+# #K站
+def getKImg():
+    main_url='http://konachan.net'
+    count=1
+    for i in range(1,100):
+        url='http://konachan.net/tag?name=&order=count&page='+str(i)+'&type='
+        soup=requestUrlWithChrome(url)
+        tags=soup.select('.tag-type-artist')+soup.select('.tag-type-general')+soup.select('.tag-type-copyright')+soup.select('.tag-type-style')+soup.select('.tag-type-character')
+        urls=[]
+        for tag in tags:
+            a_s=tag.select('a')
+            if len(a_s):
+                a=a_s[-1]
+                print(main_url+a['href'])
+                urls.append(main_url+a['href'])
+        for u in urls:
+            tag_url=u
+            while True:
+                soup=requestUrlWithChrome(tag_url)
+                a_s=soup.select('.thumb')
+                print(len(a_s))
+                for a in a_s:
+                    img_soup=requestUrlWithChrome(main_url+a['href'])
+                    img_url=img_soup.select('.original-file-unchanged')
+                    if len(img_url):
+                        img=img_url[0]['href']
+                        print(img)
+                        download({
+                            'url':img,
+                            'type':'img',
+                            'name':'K站壁纸'+str(count)
+                        })
+                        count+=1
+
+                next_page=soup.select('.next_page')
+                if len(next_page):
+                    tag_url=main_url+next_page[0]['href']
+                    continue
+                else:break
+
+
 
 if __name__ == '__main__':
     # getXhamsterPictures()
-    getXhamsterVideos()
+    # getXhamsterVideos()
+    getKImg()
