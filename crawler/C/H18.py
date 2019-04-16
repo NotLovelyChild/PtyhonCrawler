@@ -55,7 +55,7 @@ def getHTTPS():
 def requestUrl(url):
     while True:
         try:
-            httpPorxies=getHTTP()
+            httpPorxies=getHTTPS()
             h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
             print('当前使用代理为', h, '访问地址为', url)
             requests.packages.urllib3.disable_warnings()
@@ -167,7 +167,7 @@ def getXhamsterVideos():
     data_arr=[]
     for i in range(1,9):
         url='https://xhamster.com/hd/best/'+str(i)
-        soup=requestUrl(url)
+        soup=requestUrlWithChrome(url)
         videos_list=soup.select('.thumb-list__item.video-thumb')
         for video in videos_list:
             name_info=video.select('.video-thumb-info__name')
@@ -176,6 +176,19 @@ def getXhamsterVideos():
                 name=name_info[0].text
                 video_url=video_info[0]['href']
                 print(name,video_url)
+
+                soup = requestUrl(video_url)
+                video_div = soup.select('.player-container__no-player.xplayer.xplayer-fallback-image.xh-helper-hidden')
+                if len(video_div):
+                    href = video_div[0]['href']
+                    video_url = href.replace(';', '&')
+                    print(name)
+                    print(video_url)
+                    download({
+                        'name': name,
+                        'url': video_url,
+                        'type': 'xhamsterVideo'
+                    })
                 data_arr.append({
                     'video_name':name,
                     'video_url':video_url
@@ -183,66 +196,71 @@ def getXhamsterVideos():
 
     print('视频个数',len(data_arr))
 
-    for data in data_arr:
-        soup = requestUrlWithChrome(data['video_url'])
-        video_div = soup.select('.player-container__no-player.xplayer.xplayer-fallback-image.xh-helper-hidden')
-        if len(video_div):
-            href = video_div[0]['href']
-            video_url = href.replace(';', '&')
-            print(data['video_name'])
-            print(video_url)
-            download({
-                'name': data['video_name'],
-                'url': video_url,
-                'type': 'xhamsterVideo'
-            })
 
 #G站
 # def getGImg():
 
 # #K站
-def getKImg():
-    main_url='http://konachan.net'
-    count=1
-    for i in range(1,100):
-        url='http://konachan.net/tag?name=&order=count&page='+str(i)+'&type='
-        soup=requestUrlWithChrome(url)
-        tags=soup.select('.tag-type-artist')+soup.select('.tag-type-general')+soup.select('.tag-type-copyright')+soup.select('.tag-type-style')+soup.select('.tag-type-character')
-        urls=[]
-        for tag in tags:
-            a_s=tag.select('a')
-            if len(a_s):
-                a=a_s[-1]
-                print(main_url+a['href'])
-                urls.append(main_url+a['href'])
-        for u in urls:
-            tag_url=u
-            while True:
-                soup=requestUrlWithChrome(tag_url)
-                a_s=soup.select('.thumb')
-                print(len(a_s))
-                for a in a_s:
-                    img_soup=requestUrlWithChrome(main_url+a['href'])
-                    img_url=img_soup.select('.original-file-unchanged')
-                    if len(img_url):
-                        img=img_url[0]['href']
-                        print(img)
-                        download({
-                            'url':img,
-                            'type':'img',
-                            'name':'K站壁纸'+str(count)
-                        })
-                        count+=1
-
-                next_page=soup.select('.next_page')
-                if len(next_page):
-                    tag_url=main_url+next_page[0]['href']
-                    continue
-                else:break
-
+# def getKImg():
+#     main_url='http://konachan.net'
+#     count=1
+#     for i in range(1,100):
+#         url='http://konachan.net/tag?name=&order=count&page='+str(i)+'&type='
+#         soup=requestUrlWithChrome(url)
+#         tags=soup.select('.tag-type-artist')+soup.select('.tag-type-general')+soup.select('.tag-type-copyright')+soup.select('.tag-type-style')+soup.select('.tag-type-character')
+#         urls=[]
+#         for tag in tags:
+#             a_s=tag.select('a')
+#             if len(a_s):
+#                 a=a_s[-1]
+#                 print(main_url+a['href'])
+#                 urls.append(main_url+a['href'])
+#         for u in urls:
+#             tag_url=u
+#             while True:
+#                 soup=requestUrlWithChrome(tag_url)
+#                 a_s=soup.select('.thumb')
+#                 print(len(a_s))
+#                 for a in a_s:
+#                     img_soup=requestUrlWithChrome(main_url+a['href'])
+#                     img_url=img_soup.select('.original-file-unchanged')
+#                     if len(img_url):
+#                         img=img_url[0]['href']
+#                         print(img)
+#                         download({
+#                             'url':img,
+#                             'type':'img',
+#                             'name':'K站壁纸'+str(count)
+#                         })
+#                         count+=1
+#
+#                 next_page=soup.select('.next_page')
+#                 if len(next_page):
+#                     tag_url=main_url+next_page[0]['href']
+#                     continue
+#                 else:break
+def downBookMp3():
+    i=1
+    while True:
+        num=str(i)
+        if len(str(i))==1:
+            num='00'+str(i)
+        if len(str(i))==2:
+            num='0'+str(i)
+        url='http://mp3-2e.ting89.com:9090/2017/32/武神至尊/'+num+'.mp3'
+        print(url)
+        download({
+            "url":url,
+            "type":"img",
+            "name":"武神至尊"+num
+        })
+        i+=1
+        if i==266:
+            break
 
 
 if __name__ == '__main__':
     # getXhamsterPictures()
     # getXhamsterVideos()
-    getKImg()
+    # getKImg()
+    downBookMp3()
