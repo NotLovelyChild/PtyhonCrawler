@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from contextlib import closing
 import json
 import pathlib
 import urllib3
@@ -55,9 +56,9 @@ def getHTTPS():
 def requestUrl(url):
     while True:
         try:
-            httpPorxies=getHTTPS()
+            httpPorxies=getHTTP()
             h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
-            print('当前使用代理为', h, '访问地址为', url)
+            print('The proxies = ', h, 'The url = ', url)
             requests.packages.urllib3.disable_warnings()
             requestManager = requests.get(url, headers=headers, verify=False, proxies=h)
             requestManager.encoding = None
@@ -69,7 +70,7 @@ def requestUrl(url):
 def requestUrlWithChrome(url):
     while True:
         try:
-            print('Chrome 访问地址为', url)
+            print('Chrome request url = ', url)
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--headless')
             driver = webdriver.Chrome(options=chrome_options)
@@ -101,23 +102,36 @@ def download(data):
         print('The current file does not exist\n Start download ',fileName)
 
     try:
-        httpPorxies = getHTTPS()
+        httpPorxies = getHTTP()
         h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
-        print('当前使用代理为', h)
-        imgresponse = requests.get(data['url'], stream=True, proxies=h)
-        image = imgresponse.content
-        try:
-            with open(address, "wb") as jpg:
-                jpg.write(image)
-                print ('download ok',fileName)
-        except IOError:
-            print("IO Error\n")
-            pass
-        except UnboundLocalError:
-            print('UnboundLocalError')
-            pass
-        finally:
-            jpg.close
+        print('The Downloading proxies = ', h)
+        
+        with closing(requests.get(data['url'],headers=headers,stream=True, proxies=h)) as response:
+          chunk_size = 1024  # 单次请求最大值
+          content_size = int(response.headers['content-length'])  # 内容体总大小
+          data_count = 0
+          try:
+            with open(address, "wb") as file:
+              for data in response.iter_content(chunk_size=chunk_size):
+                file.write(data)
+                data_count = data_count + len(data)
+                now_jd = (data_count / content_size) * 100
+                print("\r Downloading progress ：%d%%(%d/%d) - %s" % (now_jd, data_count, content_size, fileName), end=" ")
+        
+#        imgresponse = requests.get(data['url'], stream=True)
+#        image = imgresponse.content
+#        try:
+#            with open(address, "wb") as jpg:
+#                jpg.write(image)
+#                print ('download ok',fileName)
+          except IOError:
+              print("IO Error\n")
+              pass
+          except UnboundLocalError:
+              print('UnboundLocalError')
+              pass
+          finally:
+              print('Download OK!!!!!!!!!!!!!!!!')
     except requests.exceptions.ChunkedEncodingError:
         print('requests.exceptions.ChunkedEncodingError')
         pass
@@ -196,49 +210,6 @@ def getXhamsterVideos():
 
     print('视频个数',len(data_arr))
 
-
-#G站
-# def getGImg():
-
-# #K站
-# def getKImg():
-#     main_url='http://konachan.net'
-#     count=1
-#     for i in range(1,100):
-#         url='http://konachan.net/tag?name=&order=count&page='+str(i)+'&type='
-#         soup=requestUrlWithChrome(url)
-#         tags=soup.select('.tag-type-artist')+soup.select('.tag-type-general')+soup.select('.tag-type-copyright')+soup.select('.tag-type-style')+soup.select('.tag-type-character')
-#         urls=[]
-#         for tag in tags:
-#             a_s=tag.select('a')
-#             if len(a_s):
-#                 a=a_s[-1]
-#                 print(main_url+a['href'])
-#                 urls.append(main_url+a['href'])
-#         for u in urls:
-#             tag_url=u
-#             while True:
-#                 soup=requestUrlWithChrome(tag_url)
-#                 a_s=soup.select('.thumb')
-#                 print(len(a_s))
-#                 for a in a_s:
-#                     img_soup=requestUrlWithChrome(main_url+a['href'])
-#                     img_url=img_soup.select('.original-file-unchanged')
-#                     if len(img_url):
-#                         img=img_url[0]['href']
-#                         print(img)
-#                         download({
-#                             'url':img,
-#                             'type':'img',
-#                             'name':'K站壁纸'+str(count)
-#                         })
-#                         count+=1
-#
-#                 next_page=soup.select('.next_page')
-#                 if len(next_page):
-#                     tag_url=main_url+next_page[0]['href']
-#                     continue
-#                 else:break
 def downBookMp3():
     i=1
     while True:
