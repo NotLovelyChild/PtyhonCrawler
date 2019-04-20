@@ -35,7 +35,7 @@ headers = {
 def getHTTP():
     data = []
     try:
-        with open('/Users/zh/Desktop/http.json', 'r') as file_obj:
+        with open('/Users/jackmacbook/Desktop/http.json', 'r') as file_obj:
             data = json.load(file_obj)
     except IOError:
         print('IO error')
@@ -45,7 +45,7 @@ def getHTTP():
 def getHTTPS():
     data = []
     try:
-        with open('/Users/zh/Desktop/https.json', 'r') as file_obj:
+        with open('/Users/jackmacbook/Desktop/https.json', 'r') as file_obj:
             data = json.load(file_obj)
     except IOError:
         print('IO error')
@@ -92,7 +92,7 @@ def download(data):
     print('To prepare download\n',fileName)
     print('Check if the file exists')
 
-    address = "/Users/zh/Pictures/R" + "/" + fileName
+    address = "/Users/jackmacbook/Pictures/R" + "/" + fileName
     path = pathlib.Path(address)
     if path.is_file():
         print('The current file already exists')
@@ -261,6 +261,6 @@ def downBookMp3():
 
 if __name__ == '__main__':
     # getXhamsterPictures()
-    # getXhamsterVideos()
+     getXhamsterVideos()
     # getKImg()
-    downBookMp3()
+#    downBookMp3()

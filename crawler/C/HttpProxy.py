@@ -30,7 +30,7 @@ def loadHTTP():
                     d = {'http':'http://'+ip+':'+port}
                     ips.append(d)
                     print(d)
-    with open('/Users/zh/Desktop/http.json', 'w') as file_obj:
+    with open('/Users/jackmacbook/Desktop/http.json', 'w') as file_obj:
         json.dump(ips, file_obj)
         print("写入json文件：")
 
@@ -55,14 +55,14 @@ def loadHTTPS():
                     d = {'https':'https://'+ip+':'+port}
                     ips.append(d)
                     print(d)
-    with open('/Users/zh/Desktop/https.json', 'w') as file_obj:
+    with open('/Users/jackmacbook/Desktop/https.json', 'w') as file_obj:
         json.dump(ips, file_obj)
         print("写入json文件：")
 
 def getHTTP():
     data = []
     try:
-        with open('/Users/zh/Desktop/http.json', 'r') as file_obj:
+        with open('/Users/jackmacbook/Desktop/http.json', 'r') as file_obj:
             data = json.load(file_obj)
     except IOError:
         print('IO error')
@@ -72,7 +72,7 @@ def getHTTP():
 def getHTTPS():
     data = []
     try:
-        with open('/Users/zh/Desktop/https.json', 'r') as file_obj:
+        with open('/Users/jackmacbook/Desktop/https.json', 'r') as file_obj:
             data = json.load(file_obj)
     except IOError:
         print('IO error')
