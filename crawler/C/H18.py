@@ -93,7 +93,7 @@ def download(data):
     print('To prepare download\n',fileName)
     print('Check if the file exists')
 
-    address = "/Users/jackmacbook/Pictures/R" + "/" + fileName
+    address = "/Users/jackmacbook/Pictures/E" + "/" + fileName
     path = pathlib.Path(address)
     if path.is_file():
         print('The current file already exists')
@@ -104,9 +104,9 @@ def download(data):
     try:
         httpPorxies = getHTTP()
         h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
-        print('The Downloading proxies = ', h)
-        
-        with closing(requests.get(data['url'],headers=headers,stream=True, proxies=h)) as response:
+#        print('The Downloading proxies = ', h)
+
+        with closing(requests.get(data['url'],headers=headers,stream=True)) as response:
           chunk_size = 1024  # 单次请求最大值
           content_size = int(response.headers['content-length'])  # 内容体总大小
           data_count = 0
@@ -131,7 +131,7 @@ def download(data):
               print('UnboundLocalError')
               pass
           finally:
-              print('Download OK!!!!!!!!!!!!!!!!')
+              print('\nDownload OK!!!!!!!!!!!!!!!!')
     except requests.exceptions.ChunkedEncodingError:
         print('requests.exceptions.ChunkedEncodingError')
         pass
@@ -155,11 +155,11 @@ def download(data):
 # 图片
 def getXhamsterPictures():
     for i in range(1,46000):
-        soup=requestUrlWithChrome('https://xhamster.com/photos/categories/teen/'+str(i))
+        soup=requestUrl('https://xhamster.com/photos/categories/cartoon/'+str(i))
         picture_list=soup.select('.gallery-thumb__link.thumb-image-container')
         for picture in picture_list:
             img=picture['href']
-            soup=requestUrlWithChrome(img)
+            soup=requestUrl(img)
             picture_list=soup.select('.photo-container.photo-thumb')
             for picture in picture_list:
                 img = picture['href']
@@ -179,8 +179,8 @@ def getXhamsterPictures():
 #视频
 def getXhamsterVideos():
     data_arr=[]
-    for i in range(1,9):
-        url='https://xhamster.com/hd/best/'+str(i)
+    for i in range(1,10):
+        url='https://xhamster.com/best/'+str(i)
         soup=requestUrlWithChrome(url)
         videos_list=soup.select('.thumb-list__item.video-thumb')
         for video in videos_list:
@@ -229,9 +229,75 @@ def downBookMp3():
         if i==266:
             break
 
+def getEImg():
+  mainUrl = 'https://e-hentai.org/'
+  soup=requestUrlWithChrome(mainUrl)
+  gl3c=soup.select('.gl3c.glname')
+  for g in gl3c:
+    a=g.select('a')
+    if len(a):
+      href=a[0]['href']
+      title=a[0].text
+      getEGroup(title,href)
+      print(title,'\n',href)
+
+
+
+def getEPage(soup):
+  page=0
+  pages=soup.select('.ptt')
+  if len(pages):
+    tds=pages[0].select('td')
+    for t in tds:
+      try:
+        page=int(t.text)
+      except ValueError:
+        continue
+    print('----------Has ',page,' pages.---------------')
+  return page
+
+
+def getEImgs(soup):
+  urls=[]
+  img_div=soup.select('.gdtm')
+  for img in img_div:
+    a=img.select('a')
+    if len(a):
+      href=a[0]['href']
+      urls.append(href)
+      print(href)
+  return urls
+
+def getEGroup(title,url):
+  soup=requestUrlWithChrome(url)
+  page=getEPage(soup)
+  u=getEImgs(soup)
+  if page > 1:
+    for i in range(1,page):
+      soup=requestUrlWithChrome(url+'?p='+str(i))
+      u+=getEImgs(soup)
+  print(len(u))
+  i=1
+  for i_u in u:
+    getEImage(title+str(i),i_u)
+    i+=1
+
+def getEImage(title,url):
+  soup=requestUrlWithChrome(url)
+  img_div=soup.select('#img')
+  if len(img_div):
+    href=img_div[0]['src']
+    download({
+             'name':title,
+             'url':href,
+             'type':'img'
+             })
+
+
 
 if __name__ == '__main__':
-    # getXhamsterPictures()
-     getXhamsterVideos()
+#     getXhamsterPictures()
+#     getXhamsterVideos()
     # getKImg()
 #    downBookMp3()
+  getEImg()
