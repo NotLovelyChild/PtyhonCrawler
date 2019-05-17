@@ -117,13 +117,6 @@ def download(data):
                 data_count = data_count + len(data)
                 now_jd = (data_count / content_size) * 100
                 print("\r Downloading progress ：%d%%(%d/%d) - %s" % (now_jd, data_count, content_size, fileName), end=" ")
-        
-#        imgresponse = requests.get(data['url'], stream=True)
-#        image = imgresponse.content
-#        try:
-#            with open(address, "wb") as jpg:
-#                jpg.write(image)
-#                print ('download ok',fileName)
           except IOError:
               print("IO Error\n")
               pass
