@@ -79,7 +79,7 @@ def download(data,header):
 		print('To prepare download\n',fileName)
 		print('Check if the file exists')
 
-		address = "/Users/jackmacbook/Pictures" + "/" + fileName
+		address = "/Users/jackmacbook/Pictures/E" + "/" + fileName
 		path = pathlib.Path(address)
 		if path.is_file():
 				print('The current file already exists')
@@ -153,18 +153,39 @@ def getbilibili():
 	print('输入番号')
 	av=input()
 	url='https://www.bilibili.com/video/av'+av
-	cid=getbilibilicid(av)
-	title=cid['title']
-	videoPath=getBilibiliVideoUrl(av, cid['cid'])
 	header={'Referer':url,
 			'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'}
-	download({'name':title,'type':'flv','url':videoPath}, header)
+	cid=getbilibilicid(av)
+	if len(cid) == 1:
+		title=str(cid[0]['title'])
+		videoPath=getBilibiliVideoUrl(av, cid[0]['cid'],0)
+		download({'name':title,'type':'flv','url':videoPath}, header)
+	else:
+		for c in cid:
+			title=str(c['title'])
+			videoPath=getBilibiliVideoUrl(av, c['cid'],c['p'])
+			download({'name':title,'type':'flv','url':videoPath}, header)
 
 def getbilibilicid(aid):
 	url='https://api.bilibili.com/x/web-interface/view?aid='+aid
 	jsonData=json.loads(str(requestUrl(url)))
 	pages=jsonData['data']['pages']
 	title=jsonData['data']['title']
+	isList=jsonData['data']['subtitle']['allow_submit']
+	cids=[]
+	if isList == False:
+		for page in pages:
+			cid=page['cid']
+			p=page['page']
+			title=page['part']
+			print(title,p,cid)
+			cids.append({
+				'cid':cid,
+				'p':p,
+				'title':str(p)+'.'+title
+			})
+		return cids
+		
 	cid='0'
 	resolution=0
 	for page in pages:
@@ -175,23 +196,26 @@ def getbilibilicid(aid):
 			resolution=width*height
 			cid=page['cid']
 	print('cid =',cid)
-	return {'title':title,'cid':cid}
+	return [{'title':title,'cid':cid}]
 		
-def getBilibiliVideoUrl(aid,cid):
-	url='https://api.bilibili.com/x/player/playurl?avid='+str(aid)+'&cid='+str(cid)+'&qn=112&type=&fnver=0&fnval=16&otype=json'
+def getBilibiliVideoUrl(aid,cid,p):
+	url='https://api.bilibili.com/x/player/playurl?avid='+str(aid)+'&cid='+str(cid)+'&qn=112&type=&fnver=0&fnval=16&otype=json&p='+str(p)
 	jsonData=json.loads(str(requestUrl(url)))
-	videos=jsonData['data']['dash']['video']
-	videoPath=''
-	resolution=0
-	for video in videos:
-		width=int(video['width'])
-		height=int(video['height'])
-		if width*height > resolution:
-			resolution=width*height
-			videoPath=video['baseUrl']
-	
-	print('videoPath =',videoPath)
-	return videoPath
+	if p == 0:
+		videos=jsonData['data']['dash']['video']
+		videoPath=''
+		resolution=0
+		for video in videos:
+			width=int(video['width'])
+			height=int(video['height'])
+			if width*height > resolution:
+				resolution=width*height
+				videoPath=video['baseUrl']
+		
+		print('videoPath =',videoPath)
+		return videoPath
+	else:
+		return jsonData['data']['durl'][0]['url']
 
 if __name__ == "__main__":
 #	14184325
