@@ -52,13 +52,17 @@ def setName(name):
     }
     
     req=requests.post(url,data=params, proxies=h)
-    items=json.loads(req.text)
-    for item in items:
-        print(item['url'])
+    print(req.text)
+#    items=json.loads(req.text)
+#    for item in items:
+#        print(item['source'])
+#        print(item['title'])
+#        print(item['author'])
+#        print(item['url'])
 
 
 class Music:
     def __init__(self):
         name=None
 if __name__ == '__main__':
-    setName('出山')
+    setName('周杰伦')

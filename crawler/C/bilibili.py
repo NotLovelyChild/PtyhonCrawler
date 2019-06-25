@@ -156,15 +156,10 @@ def getbilibili():
 	header={'Referer':url,
 			'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'}
 	cid=getbilibilicid(av)
-	if len(cid) == 1:
-		title=str(cid[0]['title'])
-		videoPath=getBilibiliVideoUrl(av, cid[0]['cid'],0)
+	for c in cid:
+		title=str(c['title'])
+		videoPath=getBilibiliVideoUrl(av, c['cid'],c['p'])
 		download({'name':title,'type':'flv','url':videoPath}, header)
-	else:
-		for c in cid:
-			title=str(c['title'])
-			videoPath=getBilibiliVideoUrl(av, c['cid'],c['p'])
-			download({'name':title,'type':'flv','url':videoPath}, header)
 
 def getbilibilicid(aid):
 	url='https://api.bilibili.com/x/web-interface/view?aid='+aid
@@ -196,26 +191,23 @@ def getbilibilicid(aid):
 			resolution=width*height
 			cid=page['cid']
 	print('cid =',cid)
-	return [{'title':title,'cid':cid}]
+	return [{'title':title,'cid':cid,'p':0}]
 		
 def getBilibiliVideoUrl(aid,cid,p):
 	url='https://api.bilibili.com/x/player/playurl?avid='+str(aid)+'&cid='+str(cid)+'&qn=112&type=&fnver=0&fnval=16&otype=json&p='+str(p)
 	jsonData=json.loads(str(requestUrl(url)))
-	if p == 0:
-		videos=jsonData['data']['dash']['video']
-		videoPath=''
-		resolution=0
-		for video in videos:
-			width=int(video['width'])
-			height=int(video['height'])
-			if width*height > resolution:
-				resolution=width*height
-				videoPath=video['baseUrl']
-		
-		print('videoPath =',videoPath)
-		return videoPath
-	else:
-		return jsonData['data']['durl'][0]['url']
+	videos=jsonData['data']['dash']['video']
+	videoPath=''
+	resolution=0
+	for video in videos:
+		width=int(video['width'])
+		height=int(video['height'])
+		if width*height > resolution:
+			resolution=width*height
+			videoPath=video['baseUrl']
+	print('videoPath =',videoPath)
+	return videoPath
+
 
 if __name__ == "__main__":
 #	14184325
