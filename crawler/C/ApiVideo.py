@@ -29,6 +29,8 @@ headers = {
 #httpPorxies = HttpProxy.getHTTP()
 #h = httpPorxies[random.randint(0,len(httpPorxies) - 1)]
 
+
+#url：string 影片播放的地址
 def play_url_6v():
 	url='http://www.66s.cc/e/DownSys/play/?classid=8&id=8800&pathid1=4&bf=0'
 	requestManager = requests.get(url,headers=headers,verify=False)
@@ -40,6 +42,7 @@ def play_url_6v():
 		data['play_url']=iframe[0]['src']
 	print(data)
 
+#url：string 影片详情的地址
 def detail_6v():
 	url='http://www.66s.cc/dianshiju/oumeiju/8800.html'
 	requestManager = requests.get(url,headers=headers,verify=False)
@@ -57,10 +60,12 @@ def detail_6v():
 	print(data)
 	
 
+#url：string 分类的地址
+#page：int   分页
 def list_6v():
 	#
 	#6v
-	url='http://www.66s.cc/kehuanpian/'
+	url='http://www.66s.cc/aiqingpian/'
 	page=1
 	if page > 1:
 		url=url+'index_'+str(page)+'.html'
@@ -80,8 +85,9 @@ def list_6v():
 				src=img[0]['src']
 				print(title,href,src)
 				data.append({'href':href,'title':title,'src':src})
-
 	
+	
+#不需要参数
 def tag_list_6v():
 	url='https://www.66s.cc/'
 	requestManager = requests.get(url,headers=headers,verify=False)
@@ -99,7 +105,7 @@ def tag_list_6v():
 				data.append({'title':title,'href':href})
 	
 if __name__ == '__main__':
-#	list_6v()
+	list_6v()
 #	tag_list_6v()
 #	detail_6v()
-	play_url_6v()
+#	play_url_6v()
