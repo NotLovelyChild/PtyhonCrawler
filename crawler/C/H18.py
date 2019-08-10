@@ -58,8 +58,6 @@ def getHTTPS():
 def requestUrl(url):
     while True:
         try:
-            if int(time.time()%3600) == 0 or int(time.time()%3600) == 0.3 or int(time.time()%3600) == 0.6 :
-              HttpProxy.loadHTTPS()
             httpPorxies=getHTTPS()
             h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
             print('The proxies = ', h, 'The url = ', url)
@@ -299,9 +297,11 @@ def getEImage(title,url):
 
 #二次萌
 def getTList():  
-  i=488
+  i=1112
   while True: 
     i+=1
+    if i%50 == 0:
+      HttpProxy.loadHTTPS() 
     soup=requestUrl('http://moeimg.net/'+str(i)+'.html')
     title=''
     if len(soup.title.text.split('|')):
