@@ -35,6 +35,7 @@ headers = {
 }
 
 
+
 def getHTTP():
     data = []
     try:
@@ -54,19 +55,43 @@ def getHTTPS():
         print('IO error')
 
     return data
+    
+timeoutNums=0
 
 def requestUrl(url):
+    global timeoutNums
     while True:
         try:
             httpPorxies=getHTTPS()
             h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
             print('The proxies = ', h, 'The url = ', url)
             requests.packages.urllib3.disable_warnings()
-            requestManager = requests.get(url, headers=headers, verify=False, proxies=h)
+            requestManager = requests.get(url, headers=headers, verify=False, proxies=h, timeout=4)
             requestManager.encoding = None
             return BeautifulSoup(requestManager.text, 'html.parser')
         except requests.exceptions.ConnectionError:
             print('Connection Error try retry')
+            timeoutNums=timeoutNums+1
+            print('timeoutNums = ',timeoutNums)
+            if timeoutNums == 1000:
+              HttpProxy.loadHTTPS()
+              timeoutNums=0
+            continue
+        except requests.exceptions.ConnectTimeout:
+            print('ConnectTimeout Error try retry')
+            timeoutNums=timeoutNums+1
+            print('timeoutNums = ',timeoutNums)
+            if timeoutNums == 1000:
+              HttpProxy.loadHTTPS()
+              timeoutNums=0
+            continue
+        except requests.exceptions.ReadTimeout:
+            print('ReadTimeout Error try retry')
+            timeoutNums=timeoutNums+1
+            print('timeoutNums = ',timeoutNums)
+            if timeoutNums == 1000:
+              HttpProxy.loadHTTPS()
+              timeoutNums=0
             continue
 
 def requestUrlWithChrome(url):
@@ -297,11 +322,15 @@ def getEImage(title,url):
 
 #二次萌
 def getTList():  
-  i=1112
+  i=1
+  try:
+    with open('TPage.json', 'r') as file_obj:
+      data = json.load(file_obj)
+      i=data["page"]
+  except IOError:
+    print('IO error')
   while True: 
     i+=1
-    if i%50 == 0:
-      HttpProxy.loadHTTPS() 
     soup=requestUrl('http://moeimg.net/'+str(i)+'.html')
     title=''
     if len(soup.title.text.split('|')):
@@ -316,12 +345,15 @@ def getTList():
            'type':'img'
            })
       time.sleep(0.1)
+    with open('TPage.json', 'w') as file_obj:
+      json.dump({"page":i}, file_obj)
+      print("写入TPage到文件：")
 
 if __name__ == '__main__':
+
 #     getXhamsterPictures()
 #     getXhamsterVideos()
     # getKImg()
 #    downBookMp3()
 #  getEImg()
   getTList()
-  

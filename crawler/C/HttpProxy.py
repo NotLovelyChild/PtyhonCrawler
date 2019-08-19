@@ -79,6 +79,17 @@ def getHTTPS():
 
     return data
 
+def getHttpsWith89ip():
+    data=[]
+    for i in range(1,30):
+        url = 'http://www.89ip.cn/index_'+str(i)+'.html'
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        
+
 if __name__ == '__main__':
     loadHTTP()
     loadHTTPS()

@@ -65,4 +65,4 @@ class Music:
     def __init__(self):
         name=None
 if __name__ == '__main__':
-    setName('周杰伦')
+    setName('秋殇别恋')
