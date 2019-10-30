@@ -8,6 +8,8 @@ import urllib3
 import http
 import selenium
 import random
+import time
+import HttpProxy
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:64.0) Gecko/20100101 Firefox/64.0',
@@ -32,6 +34,7 @@ headers = {
 }
 
 
+
 def getHTTP():
     data = []
     try:
@@ -49,19 +52,43 @@ def getHTTPS():
     except IOError:
         print('IO error')
     return data
+    
+timeoutNums=0
 
 def requestUrl(url):
+    global timeoutNums
     while True:
         try:
-            httpPorxies=getHTTP()
+            httpPorxies=getHTTPS()
             h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
             print('The proxies = ', h, 'The url = ', url)
             requests.packages.urllib3.disable_warnings()
-            requestManager = requests.get(url, headers=headers, verify=False, proxies=h)
+            requestManager = requests.get(url, headers=headers, verify=False, proxies=h, timeout=4)
             requestManager.encoding = None
             return BeautifulSoup(requestManager.text, 'html.parser')
         except requests.exceptions.ConnectionError:
             print('Connection Error try retry')
+            timeoutNums=timeoutNums+1
+            print('timeoutNums = ',timeoutNums)
+            if timeoutNums == 1000:
+              HttpProxy.loadHTTPS()
+              timeoutNums=0
+            continue
+        except requests.exceptions.ConnectTimeout:
+            print('ConnectTimeout Error try retry')
+            timeoutNums=timeoutNums+1
+            print('timeoutNums = ',timeoutNums)
+            if timeoutNums == 1000:
+              HttpProxy.loadHTTPS()
+              timeoutNums=0
+            continue
+        except requests.exceptions.ReadTimeout:
+            print('ReadTimeout Error try retry')
+            timeoutNums=timeoutNums+1
+            print('timeoutNums = ',timeoutNums)
+            if timeoutNums == 1000:
+              HttpProxy.loadHTTPS()
+              timeoutNums=0
             continue
 
 def requestUrlWithChrome(url):
@@ -81,6 +108,8 @@ def requestUrlWithChrome(url):
             continue
 
 def download(data):
+    if int(time.time()%3600) == 0 or int(time.time()%3600) == 0.3 or int(time.time()%3600) == 0.6 :
+      HttpProxy.loadHTTPS()
     print(data['url'])
     fileName=''
     if data['type'] == 'img':
@@ -90,7 +119,7 @@ def download(data):
     print('To prepare download\n',fileName)
     print('Check if the file exists')
 
-    address = "/Users/jackmacbook/Pictures/E" + "/" + fileName
+    address = "/Volumes/J/Nice" + "/" + fileName
     path = pathlib.Path(address)
     if path():
         print('The current file already exists')
@@ -99,13 +128,18 @@ def download(data):
         print('The current file does not exist\n Start download ',fileName)
 
     try:
-        httpPorxies = getHTTP()
+        httpPorxies = getHTTPS()
         h = httpPorxies[random.randint(0, len(httpPorxies) - 1)]
-#        print('The Downloading proxies = ', h)
-
-        with closing(requests.get(data['url'],headers=headers,stream=True)) as response:
+        print('The Downloading proxies = ', h)
+#        with closing(requests.get(data['url'],headers=headers,stream=True)) as response:
+        with closing(requests.get(data['url'],headers=headers,stream=True, proxies=h)) as response:
           chunk_size = 1024  # 单次请求最大值
-          content_size = int(response.headers['content-length'])  # 内容体总大小
+          try:
+             content_size = int(response.headers['content-length'])  # 内容体总大小
+          except KeyError:
+            print("KeyError\n")
+            pass
+          
           data_count = 0
           try:
             with open(address, "wb") as file:
@@ -283,9 +317,37 @@ def getEImage(title,url):
              'type':'img'
              })
 
-
+#二次萌
+def getTList():  
+  i=1
+  try:
+    with open('TPage.json', 'r') as file_obj:
+      data = json.load(file_obj)
+      i=data["page"]
+  except IOError:
+    print('IO error')
+  while True: 
+    i+=1
+    soup=requestUrl('http://moeimg.net/'+str(i)+'.html')
+    title=''
+    if len(soup.title.text.split('|')):
+      title=soup.title.text.split('|')[0]
+    imgs=soup.select('.thumbnail_image')
+    for img in imgs:
+      name=title+img['alt']
+      src=img['src']
+      download({
+           'name':name,
+           'url':src,
+           'type':'img'
+           })
+      time.sleep(0.1)
+    with open('TPage.json', 'w') as file_obj:
+      json.dump({"page":i}, file_obj)
+      print("写入TPage到文件：")
 
 if __name__ == '__main__':
+
 #     getXhamsterPictures()
      getXhamsterVideos()
     # getKImg()
@@ -296,3 +358,4 @@ if __name__ == '__main__':
 #  driver = webdriver.Chrome(options=chrome_options)
 #  driver.get(url)
   
+  getTList()

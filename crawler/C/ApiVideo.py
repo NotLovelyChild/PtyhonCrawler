@@ -33,6 +33,46 @@ def list_6v():
 	#
 	#6v
 	url='http://www.66s.cc/kehuanpian/'
+#httpPorxies = HttpProxy.getHTTP()
+#h = httpPorxies[random.randint(0,len(httpPorxies) - 1)]
+
+
+#url：string 影片播放的地址
+def play_url_6v():
+	url='http://www.66s.cc/e/DownSys/play/?classid=8&id=8800&pathid1=4&bf=0'
+	requestManager = requests.get(url,headers=headers,verify=False)
+	requestManager.encoding = None
+	soup=BeautifulSoup(requestManager.text, 'html.parser')
+	iframe=soup.select('iframe')
+	data={}
+	if len(iframe):
+		data['play_url']=iframe[0]['src']
+	print(data)
+
+#url：string 影片详情的地址
+def detail_6v():
+	url='http://www.66s.cc/dianshiju/oumeiju/8800.html'
+	requestManager = requests.get(url,headers=headers,verify=False)
+	requestManager.encoding = None
+	soup=BeautifulSoup(requestManager.text, 'html.parser')
+	video_list=soup.select('.lBtn')
+	data={}
+	#播放地址
+	videos=[]
+	for video in video_list:
+		video_title=video.text
+		video_url=video['href']
+		videos.append({'video_title':video_title,'video_url':video_url})
+	data['plays']=videos
+	print(data)
+	
+
+#url：string 分类的地址
+#page：int   分页
+def list_6v():
+	#
+	#6v
+	url='http://www.66s.cc/aiqingpian/'
 	page=1
 	if page > 1:
 		url=url+'index_'+str(page)+'.html'
@@ -52,11 +92,11 @@ def list_6v():
 				src=img[0]['src']
 				print(title,href,src)
 				data.append({'href':href,'title':title,'src':src})
-
 	
+#不需要参数
 def tag_list_6v():
 	url='https://www.66s.cc/'
-	requestManager = requests.get(url,headers=headers,proxies=h,verify=False)
+	requestManager = requests.get(url,headers=headers,verify=False)
 	requestManager.encoding = None
 	soup=BeautifulSoup(requestManager.text, 'html.parser')
 	items=soup.select('.menu-item')
@@ -72,4 +112,4 @@ def tag_list_6v():
 	
 if __name__ == '__main__':
 	list_6v()
-#	tag_list_6v()
+
