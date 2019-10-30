@@ -29,7 +29,6 @@ headers = {
     'User-Agent': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; SV1; QQDownload 732; .NET4.0C; .NET4.0E; SE 2.X MetaSr 1.0)',
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/4.4.3.4000 Chrome/30.0.1599.101 Safari/537.36',
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 UBrowser/4.0.3214.0 Safari/537.36'
-
 }
 
 
@@ -40,7 +39,6 @@ def getHTTP():
             data = json.load(file_obj)
     except IOError:
         print('IO error')
-
     return data
 
 def getHTTPS():
@@ -50,7 +48,6 @@ def getHTTPS():
             data = json.load(file_obj)
     except IOError:
         print('IO error')
-
     return data
 
 def requestUrl(url):
@@ -95,7 +92,7 @@ def download(data):
 
     address = "/Users/jackmacbook/Pictures/E" + "/" + fileName
     path = pathlib.Path(address)
-    if path.is_file():
+    if path():
         print('The current file already exists')
         return
     else:
@@ -290,7 +287,12 @@ def getEImage(title,url):
 
 if __name__ == '__main__':
 #     getXhamsterPictures()
-#     getXhamsterVideos()
+     getXhamsterVideos()
     # getKImg()
 #    downBookMp3()
-  getEImg()
+#  getEImg()
+#  url='https://sstk.me'
+#  chrome_options = webdriver.ChromeOptions()
+#  driver = webdriver.Chrome(options=chrome_options)
+#  driver.get(url)
+  
