@@ -357,5 +357,3 @@ if __name__ == '__main__':
 #  chrome_options = webdriver.ChromeOptions()
 #  driver = webdriver.Chrome(options=chrome_options)
 #  driver.get(url)
-  
-  getTList()

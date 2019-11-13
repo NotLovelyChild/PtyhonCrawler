@@ -59,18 +59,20 @@ def getHTTP():
 	try:
 		with open('http.json', 'r') as file_obj:
 			data = json.load(file_obj)
+			file_obj.close
 	except IOError:
 		print('IO error')
-	return data[random.randint(0,len(data))]
+	return data[random.randint(0,len(data)-1)]
 
 def getHTTPS():
 	data = []
 	try:
 		with open('https.json', 'r') as file_obj:
 			data = json.load(file_obj)
+			file_obj.close
 	except IOError:
 		print('IO error')
-	return data[random.randint(0,len(data))]
+	return data[random.randint(0,len(data)-1)]
 	
 def loadHttpProxy():
 	ips = []
@@ -91,6 +93,7 @@ def loadHttpProxy():
 	with open('http.json', 'w') as file_obj:
 		json.dump(ips, file_obj)
 		print("写入json文件：")
+		file_obj.close
 	
 	ips = []
 	for i in range(1,10):
@@ -110,6 +113,7 @@ def loadHttpProxy():
 	with open('https.json', 'w') as file_obj:
 		json.dump(ips, file_obj)
 		print("写入json文件：")
+		file_obj.close
 		
 def requestUrl(url):
 	while True:
@@ -126,10 +130,10 @@ def requestUrlWithChrome(url):
 	while True:
 		try:
 			chrome_options = webdriver.ChromeOptions()
-#			chrome_options.add_argument('--headless')
+			chrome_options.add_argument('--headless')
 			chrome_options.add_argument('lang=zh_CN.UTF-8')
 			#设置user-agent
-			user_agent="user-agent="+user_agents[random.randint(0,len(user_agents))]
+			user_agent="user-agent="+user_agents[random.randint(0,len(user_agents)-1)]
 			chrome_options.add_argument(user_agent)
 			#禁用图片
 			prefs = {"profile.managed_default_content_settings.images": 2}
@@ -145,7 +149,7 @@ def requestUrlWithChrome(url):
 			print('Connection Error try retry')
 			continue
 			
-def downloadFile(savePath='',filePath='',fileName=''):
+def downloadFile(savePath='',filePath='',fileName='',minSize=0):
 	#判断文件名是否存在
 	if not len(fileName):
 		fileName = filePath.split("/")[-1]
@@ -160,18 +164,23 @@ def downloadFile(savePath='',filePath='',fileName=''):
 		return
 	#开始下载
 	try:
-		with closing(requests.get(filePath,headers=headers,stream=True, proxies=getHTTP())) as response:
+		with closing(requests.get(filePath,headers=headers,stream=True, proxies=getHTTP(),timeout=5)) as response:
 #		with closing(requests.get(filePath,headers=Config.headers,stream=True)) as response:
 			chunk_size = 1024  # 单次请求最大值
 			content_size = int(response.headers['content-length'])  # 内容体总大小
 			data_count = 0
+			if minSize > 0:
+				if content_size/1024 < (minSize*1024):
+					print("文件小于"+str(minSize)+"MB,PASS!!!")
+					return
 			try:
 				with open(path, "wb") as file:
 					for data in response.iter_content(chunk_size=chunk_size):
 						file.write(data)
 						data_count = data_count + len(data)
 						now_jd = (data_count / content_size) * 100
-						print("\r Downloading progress ：%d%%(%d/%d) - %s" % (now_jd, data_count, content_size, fileName), end=" ")
+						print("\r Downloading progress ：%d%%(%.2fkb/%.2fkb) - %s" % (now_jd, data_count/1024.0, content_size/1024.0, fileName), end=" ")
+					file.close
 			except IOError:
 					print("IO Error\n")
 					pass
@@ -182,6 +191,9 @@ def downloadFile(savePath='',filePath='',fileName=''):
 					print('\nDownload OK!!!!!!!!!!!!!!!!')
 	except requests.exceptions.ChunkedEncodingError:
 		print('requests.exceptions.ChunkedEncodingError')
+		pass
+	except requests.exceptions.ReadTimeout:
+		print('requests.exceptions.ReadTimeout')
 		pass
 	except requests.exceptions.ChunkedEncodingError:
 		print('ChunkedEncodingError -- please wait 3 seconds')

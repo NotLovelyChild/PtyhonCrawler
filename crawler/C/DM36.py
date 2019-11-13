@@ -20,5 +20,6 @@ def get_magnet(url):
 
 if __name__ == "__main__":
 #	search("鬼灭之刃")
-	url="https://www.36dm.com/show-c61a99ab29570ae62b61782f7647605f3b3af5d9.html"
-	print(get_magnet(url))
+#	url="https://www.36dm.com/show-c61a99ab29570ae62b61782f7647605f3b3af5d9.html"
+#	print(get_magnet(url))
+	Config.loadHttpProxy()
