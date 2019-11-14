@@ -149,7 +149,7 @@ def requestUrlWithChrome(url):
 			print('Connection Error try retry')
 			continue
 			
-def downloadFile(savePath='',filePath='',fileName='',minSize=0):
+def downloadFile(savePath='',filePath='',fileName='',minSize=0,isHTTPS=False):
 	#判断文件名是否存在
 	if not len(fileName):
 		fileName = filePath.split("/")[-1]
@@ -164,10 +164,18 @@ def downloadFile(savePath='',filePath='',fileName='',minSize=0):
 		return
 	#开始下载
 	try:
-		with closing(requests.get(filePath,headers=headers,stream=True, proxies=getHTTP(),timeout=5)) as response:
+		if isHTTPS:
+			proxies=getHTTPS()
+		else:
+			proxies=getHTTP()
+		with closing(requests.get(filePath,headers=headers,stream=True, proxies=proxies,timeout=5)) as response:
 #		with closing(requests.get(filePath,headers=Config.headers,stream=True)) as response:
 			chunk_size = 1024  # 单次请求最大值
-			content_size = int(response.headers['content-length'])  # 内容体总大小
+			try:
+				content_size = int(response.headers['content-length'])  # 内容体总大小
+			except KeyError:
+					print('KeyError')
+					return
 			data_count = 0
 			if minSize > 0:
 				if content_size/1024 < (minSize*1024):
@@ -186,6 +194,9 @@ def downloadFile(savePath='',filePath='',fileName='',minSize=0):
 					pass
 			except UnboundLocalError:
 					print('UnboundLocalError')
+					pass
+			except KeyError:
+					print('KeyError')
 					pass
 			finally:
 					print('\nDownload OK!!!!!!!!!!!!!!!!')
