@@ -148,6 +148,10 @@ def requestUrlWithChrome(url):
 			driver.quit()
 			print('Connection Error try retry')
 			continue
+		except selenium.common.exceptions.WebDriverException:
+			driver.quit()
+			print('Connection Error try retry')
+			return
 			
 def downloadFile(savePath='',filePath='',fileName='',minSize=0,isHTTPS=False):
 	#判断文件名是否存在
