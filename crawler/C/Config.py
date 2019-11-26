@@ -9,6 +9,7 @@ import pathlib
 import urllib3
 import http
 import selenium
+import _thread
 
 headers = {
 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:64.0) Gecko/20100101 Firefox/64.0',
@@ -115,11 +116,11 @@ def loadHttpProxy():
 		print("写入json文件：")
 		file_obj.close
 		
-def requestUrl(url):
+def requestUrl(url, https=False):
 	while True:
 		try:
 			requests.packages.urllib3.disable_warnings()
-			requestManager = requests.get(url, headers=headers, verify=False, proxies=getHTTP())
+			requestManager = requests.get(url, headers=headers, verify=False, proxies= getHTTPS() if https else getHTTP())
 			requestManager.encoding = None
 			return BeautifulSoup(requestManager.text, 'html.parser')
 		except requests.exceptions.ConnectionError:

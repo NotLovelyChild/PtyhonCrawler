@@ -1,7 +1,12 @@
 import Config
+import _thread
 #safe all
 #questionable 15
 #explicit 18
+
+def down(path, href, name):
+	Config.downloadFile(savePath="/Volumes/J/konachan/"+path,filePath=href,fileName=name+".png",minSize=5)
+
 if __name__ == '__main__':
 #	Config.loadHttpProxy()
 	print("1. all age\n2. 15 age\n3. 18 age")
@@ -24,6 +29,6 @@ if __name__ == '__main__':
 			image_str=image['onclick']
 			image_url=image_str.replace("addUrl('","").replace("',this)","")
 			image_name=image_str.split("/")[4]
-			Config.downloadFile(savePath="/Volumes/J/konachan/"+path,filePath=image_url,fileName=image_name+".png",minSize=5)
+			_thread.start_new_thread(down, (path,image_url,image_name))
 		p=p+1
 	
