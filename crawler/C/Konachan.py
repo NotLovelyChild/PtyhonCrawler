@@ -5,7 +5,7 @@ import _thread
 #explicit 18
 
 def down(path, href, name):
-	Config.downloadFile(savePath="/Volumes/J/konachan/"+path,filePath=href,fileName=name+".png",minSize=5)
+	Config.downloadFile(savePath="/Users/jackmacbook/Pictures/konachan/"+path,filePath=href,fileName=name+".png",minSize=5)
 
 if __name__ == '__main__':
 #	Config.loadHttpProxy()

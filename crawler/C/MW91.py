@@ -3,7 +3,7 @@ import _thread
 import time
 
 def downloadImg():
-	for i in range(1,200):
+	for i in range(1,20):
 		url="https://tu.91mw.net/page/"+str(i)+"/"
 		soup=Config.requestUrl(url)
 		groups=soup.select(".blog-title")
@@ -22,10 +22,11 @@ def downloadImg():
 						img_name=title+str(num)+".jpg"
 						img_href="https://tu.91mw.net/"+img['src']
 						num+=1
-						_thread.start_new_thread(down, (title,img_href,img_name))
+#						_thread.start_new_thread(down, (title,img_href,img_name))
+						down(title, img_href, img_name)
 						
 
 def down(title, path, name):
-	Config.downloadFile(savePath="/Volumes/J/mw91/"+title,filePath=path,fileName=name)
+	Config.downloadFile(savePath="/Users/jackmacbook/Pictures/MW91/"+title,filePath=path,fileName=name)
 if __name__ == '__main__':
 	downloadImg()
